@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
+import { client } from "@/lib/client"
 
 export default function Home() {
 
@@ -26,7 +27,8 @@ export default function Home() {
   const STORAGE = "custom-username"
 
   useEffect(() => {
-    const initUsername = async () => {    
+    const initUsername = async () => {   
+      const user = await client.get() 
       const storedUsername = localStorage.getItem(STORAGE)
       if (storedUsername) {
         setUsername(storedUsername)
