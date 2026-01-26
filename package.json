@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.6",
+    "@tanstack/react-query": "^5.90.20",
+    "@upstash/redis": "^1.36.1",
     "axios": "^1.13.3",
     "elysia": "^1.4.22",
     "nanoid": "^5.1.6",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
+    "lightningcss": "^1.31.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
