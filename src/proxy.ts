@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { redis } from "./lib/redis";
+import { redis } from "@/lib/redis";
 import { nanoid } from "nanoid";
 
 export const proxy = async (req: NextRequest) => {
@@ -13,9 +13,7 @@ export const proxy = async (req: NextRequest) => {
 
   const roomId = roomMatch[1];
 
-  const meta = await redis.hgetall<{ connected: string[]; createdAt: number }>(
-    `meta:${roomId}`,
-  );
+  const meta = await redis.hgetall<{ connected: string[]; createdAt: number }>(`meta:${roomId}`,);
 
   if (!meta) {
     return NextResponse.redirect(
@@ -32,7 +30,7 @@ export const proxy = async (req: NextRequest) => {
 
   // USER IS NOT ALLOWED TO REJOIN
   if (meta.connected.length >= 2) {
-    return NextResponse.redirect(new URL("/?error=room-full", req.url))
+    return NextResponse.redirect(new URL("/?error=room-full", req.url));
   }
 
   const response = NextResponse.next();
