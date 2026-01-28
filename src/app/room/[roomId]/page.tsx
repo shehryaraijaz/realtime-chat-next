@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { getUsername } from "@/lib/username";
 
 function formatTimeRemaining(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -18,6 +19,8 @@ const Page = () => {
 
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const username = getUsername();
 
   const [copied, setCopied] = useState<boolean>(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
