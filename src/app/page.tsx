@@ -1,58 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { nanoid } from "nanoid";
-import { useMutation } from "@tanstack/react-query";
+import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 const errorMessages: Record<string, string> = {
   "room-not-found-404": "The room does not exist.",
   "room-full": "This room is already full.",
-}
+};
 
 export default function Home() {
-  const [username, setUsername] = useState<string | null>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const { username } = useUsername();
+
   const router = useRouter();
 
   const params = useSearchParams();
   const error = params.get("error");
-
-  const ANIMALS = ["penguin", "wolf", "leapord", "cat", "dinasour"];
-
-  const randomWord = async () => {
-    const response = await fetch(`https://random-word-api.herokuapp.com/word`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const word = await response.json();
-    return word[0];
-  };
-
-  const generateUsername = (word: string) => {
-    const username = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    return `${word}-${username}-${nanoid(5)}`;
-  };
-
-  const STORAGE = "custom-username";
-
-  useEffect(() => {
-    const initUsername = async () => {
-      const storedUsername = localStorage.getItem(STORAGE);
-      if (storedUsername) {
-        setUsername(storedUsername);
-        return;
-      }
-
-      const word = await randomWord();
-      const getUsername = generateUsername(word);
-      localStorage.setItem(STORAGE, getUsername);
-      setUsername(getUsername);
-    };
-
-    initUsername();
-  }, []);
 
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
@@ -105,9 +71,12 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col items-center">
-        {error && (
-          <p className="text-sm text-red-500">{errorMessages[error] ?? "Something went wrong. Please try again." }</p>
-        )}
+          {error && (
+            <p className="text-sm text-red-500">
+              {errorMessages[error] ??
+                "Something went wrong. Please try again."}
+            </p>
+          )}
         </div>
       </div>
     </div>
