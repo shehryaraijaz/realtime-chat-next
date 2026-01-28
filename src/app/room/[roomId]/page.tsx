@@ -1,11 +1,11 @@
 "use client";
 
+import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { getUsername } from "@/lib/username";
 
 function formatTimeRemaining(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -20,15 +20,15 @@ const Page = () => {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const username = getUsername();
+  const { username } = useUsername();
 
   const [copied, setCopied] = useState<boolean>(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-  const { mutate: sendMessage } = useMutation({
+  const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
       await client.messages.post(
-        { sender: username, text: input },
+        { sender: username, text },
         { query: { roomId } },
       );
     },
@@ -96,6 +96,7 @@ const Page = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && input.trim()) {
                   // TODO: SEND MESSAGE
+                  sendMessage({ text: input });
                   inputRef.current?.focus();
                 }
               }}
@@ -105,7 +106,14 @@ const Page = () => {
             />
           </div>
 
-          <button className="bg-zinc-800 text-zinc-400 px-6 text-sm font-bold hover:text-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase cursor-pointer">
+          <button
+            onClick={() => {
+              sendMessage({ text: input });
+              inputRef.current?.focus();
+            }}
+            disabled={!input.trim() || isPending}
+            className="bg-zinc-800 text-zinc-400 px-6 text-sm font-bold hover:text-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase cursor-pointer"
+          >
             Send
           </button>
         </div>
