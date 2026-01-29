@@ -1,18 +1,27 @@
-import { nanoid } from "nanoid";
+import { nanoid, random } from "nanoid";
 import { useState } from "react";
 import { useEffect } from "react";
 
 export const useUsername = () => {
   const [username, setUsername] = useState("");
 
-  const BASE_API = "https://random-word-api.herokuapp.com";
+  const BASE_WORD_API = "https://random-word-api.herokuapp.com";
 
-  const ANIMALS = ["penguin", "wolf", "leapord", "cat", "dinasour"];
+  const BASE_ANIMAL_API = "https://random-animal-api.vercel.app/api";
 
   const STORAGE = "custom-username";
 
-  const randomWord = async () => {
-    const response = await fetch(`${BASE_API}/word`);
+  const randomAnimal = async () => {
+    const response = await fetch(`${BASE_ANIMAL_API}/random-animal`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const word = await response.json();
+    return word["city"].toLowerCase().split(" ")[0];
+  };
+
+  const randomWord = async (): Promise<string> => {
+    const response = await fetch(`${BASE_WORD_API}/word`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -20,9 +29,8 @@ export const useUsername = () => {
     return word[0];
   };
 
-  const generateUsername = (word: string) => {
-    const username = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    return `${word}-${username}-${nanoid(5)}`;
+  const generateUsername = (randomWord: string, randomAnimal: string) => {
+    return `${randomWord}-${randomAnimal}-${nanoid(5)}`;
   };
 
   useEffect(() => {
@@ -34,7 +42,8 @@ export const useUsername = () => {
       }
 
       const word = await randomWord();
-      const getUsername = generateUsername(word);
+      const animal = await randomAnimal();
+      const getUsername = generateUsername(word, animal);
       localStorage.setItem(STORAGE, getUsername);
       setUsername(getUsername);
     };
