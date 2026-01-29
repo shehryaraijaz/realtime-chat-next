@@ -1,31 +1,52 @@
-import { redis } from "@/lib/redis";
-import { Elysia, t } from "elysia";
-import { nanoid } from "nanoid";
-import { AuthMiddleware } from "./auth";
-import { z } from "zod";
 import { realtime } from "@/lib/realtime";
-import { timeStamp } from "console";
+import { redis } from "@/lib/redis";
 import { Message } from "@/types/message";
+import { Elysia } from "elysia";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+import { AuthMiddleware } from "./auth";
 
 const ROOM_TTL_SECONDS = 60 * 10;
 
 // this will create a new api route /room
-const rooms = new Elysia({ prefix: "/room" }).post("/create", async () => {
-  const roomId = nanoid();
+const rooms = new Elysia({ prefix: "/room" })
+  .post("/create", async () => {
+    const roomId = nanoid();
 
-  await redis.hset(`meta:${roomId}`, {
-    connected: [],
-    createdAt: Date.now(),
-  });
+    await redis.hset(`meta:${roomId}`, {
+      connected: [],
+      createdAt: Date.now(),
+    });
 
-  await redis.expire(`meta:${roomId}`, ROOM_TTL_SECONDS);
+    await redis.expire(`meta:${roomId}`, ROOM_TTL_SECONDS);
 
-  return { roomId };
-}).use(AuthMiddleware).get("/ttl", async ({ auth }) => {
-  const ttl = await redis.ttl(`meta:${auth.roomId}`);
+    return { roomId };
+  })
+  .use(AuthMiddleware)
+  .get(
+    "/ttl",
+    async ({ auth }) => {
+      const ttl = await redis.ttl(`meta:${auth.roomId}`);
 
-  return { ttl: ttl > 0 ? ttl : 0 };
-}, { query: z.object({ roomId: z.string() }) });
+      return { ttl: ttl > 0 ? ttl : 0 };
+    },
+    { query: z.object({ roomId: z.string() }) },
+  )
+  .delete(
+    "/",
+    async ({ auth }) => {
+      await Promise.all([
+        redis.del(auth.roomId),
+        redis.del(`meta:${auth.roomId}`),
+        redis.del(`messages:${auth.roomId}`),
+      ]);
+
+      await realtime
+        .channel(auth.roomId)
+        .emit("chat.destroy", { isDestroyed: true });
+    },
+    { query: z.object({ roomId: z.string() }) },
+  );
 
 const messages = new Elysia({ prefix: "/messages" })
   .use(AuthMiddleware)
@@ -95,3 +116,4 @@ export const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages); // l
 
 export const GET = app.fetch;
 export const POST = app.fetch;
+export const DELETE = app.fetch;
