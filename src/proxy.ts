@@ -17,7 +17,7 @@ export const proxy = async (req: NextRequest) => {
 
   if (!meta) {
     return NextResponse.redirect(
-      new URL("/?error=room-not-found-404", req.url),
+      new URL("/?alert=room-not-found-404", req.url),
     );
   }
 
@@ -30,7 +30,7 @@ export const proxy = async (req: NextRequest) => {
 
   // USER IS NOT ALLOWED TO REJOIN
   if (meta.connected.length >= 2) {
-    return NextResponse.redirect(new URL("/?error=room-full", req.url));
+    return NextResponse.redirect(new URL("/?alert=room-full", req.url));
   }
 
   const response = NextResponse.next();
