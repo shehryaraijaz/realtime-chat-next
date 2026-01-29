@@ -6,9 +6,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-const errorMessages: Record<string, string> = {
-  "room-not-found-404": "The room does not exist.",
-  "room-full": "This room is already full.",
+const errorMessages: Record<string, string[]> = {
+  "room-not-found-404": ["ROOM NOT FOUND", "The room does not exist."],
+  "room-full": ["ROOM FULL", "This room is already full."],
+  "destroyed-true": ["ROOM DESTROYED", "The room is destroyed."],
+  "timer-expired": ["TIMER EXPIRED", "The timer has expired."],
+  unknown: ["ERROR", "An unexpected error occurred."],
 };
 
 export default function Home() {
@@ -18,7 +21,11 @@ export default function Home() {
   const router = useRouter();
 
   const params = useSearchParams();
-  const error = params.get("error");
+  const alert = params.get("alert");
+
+  const alertKey = alert && errorMessages[alert] ? alert : "unknown";
+
+  const activeAlert = alertKey ? errorMessages[alertKey] : null;
 
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
@@ -38,6 +45,15 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
+        {activeAlert && (
+          <div className="flex flex-col items-center bg-red-800/30 border-3 border-red-800 p-3">
+            <h5 className="text-red-500 font-bold">
+              {activeAlert[0]}
+            </h5>
+            <p className="text-zinc-500 text-sm">{activeAlert[1]}</p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-green-500">
             <span className="animate-pulse">{">"}</span>private_chat
@@ -68,15 +84,6 @@ export default function Home() {
           >
             {loading ? "CREATING ROOM.." : "CREATE ROOM"}
           </button>
-        </div>
-
-        <div className="flex flex-col items-center">
-          {error && (
-            <p className="text-sm text-red-500">
-              {errorMessages[error] ??
-                "Something went wrong. Please try again."}
-            </p>
-          )}
         </div>
       </div>
     </div>
