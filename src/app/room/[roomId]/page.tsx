@@ -27,25 +27,24 @@ const Page = () => {
   const { username } = useUsername();
 
   const [copied, setCopied] = useState<boolean>(false);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const { data: ttlData } = useQuery({
     queryKey: ["ttl", roomId],
     queryFn: async () => {
       const response = await client.room.ttl.get({
-        query: {
-          roomId,
-        },
+        query: { roomId },
       });
       return response.data;
     },
   });
 
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(ttlData?.ttl ?? null);
+
   useEffect(() => {
-    if (ttlData?.ttl !== undefined && timeRemaining === null) {
+    if (ttlData?.ttl !== undefined) {
       setTimeRemaining(ttlData.ttl);
     }
-  }, [ttlData, timeRemaining]);
+  }, [ttlData]);
 
   useEffect(() => {
     if (timeRemaining === null || timeRemaining < 0) return;

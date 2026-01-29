@@ -1,6 +1,5 @@
-import { nanoid, random } from "nanoid";
-import { useState } from "react";
-import { useEffect } from "react";
+import { nanoid } from "nanoid";
+import { useEffect, useState } from "react";
 
 export const useUsername = () => {
   const [username, setUsername] = useState("");
