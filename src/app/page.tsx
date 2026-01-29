@@ -23,7 +23,7 @@ export default function Home() {
   const params = useSearchParams();
   const alert = params.get("alert");
 
-  const alertKey = alert && errorMessages[alert] ? alert : "unknown";
+  const alertKey = alert ? (errorMessages[alert] ? alert : "unknown") : null;
 
   const activeAlert = alertKey ? errorMessages[alertKey] : null;
 
