@@ -2,12 +2,12 @@
 
 import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
+import { format } from "@/lib/date-time";
+import { useRealtime } from "@/lib/realtime-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { format } from "@/lib/date-time";
-import { useRealtime } from "@/lib/realtime-client";
 
 function formatTimeRemaining(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -42,10 +42,10 @@ const Page = () => {
   });
 
   useEffect(() => {
-    if (ttlData?.ttl !== undefined) {
+    if (ttlData?.ttl !== undefined && timeRemaining === null) {
       setTimeRemaining(ttlData.ttl);
     }
-  }, [ttlData]);
+  }, [ttlData, timeRemaining]);
 
   useEffect(() => {
     if (timeRemaining === null || timeRemaining < 0) return;
@@ -84,6 +84,12 @@ const Page = () => {
         { query: { roomId } },
       );
       setInput("");
+    },
+  });
+
+  const { mutate: destroyRoom } = useMutation({
+    mutationFn: async () => {
+      await client.room.delete(null, { query: { roomId } });
     },
   });
 
@@ -143,7 +149,10 @@ const Page = () => {
           </div>
         </div>
 
-        <button className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+        <button
+          onClick={() => destroyRoom()}
+          className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+        >
           <span className="group-hover:animate-pulse">💣</span>DESTROY NOW
         </button>
       </header>
