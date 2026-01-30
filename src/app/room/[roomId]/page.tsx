@@ -38,35 +38,47 @@ const Page = () => {
     },
   });
 
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(ttlData?.ttl ?? null);
+  // State for countdown timer
+  const [initialTtl, setInitialTtl] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
+  // Compute remaining time from initial TTL and elapsed time
+  const timeRemaining =
+    initialTtl !== null ? Math.max(0, initialTtl - elapsedSeconds) : null;
+
+  // Initialize TTL from server data (using queueMicrotask to avoid sync setState warning)
   useEffect(() => {
-    if (ttlData?.ttl !== undefined) {
-      setTimeRemaining(ttlData.ttl);
+    if (ttlData?.ttl !== undefined && initialTtl === null) {
+      queueMicrotask(() => {
+        setInitialTtl(ttlData.ttl);
+      });
     }
-  }, [ttlData]);
+  }, [ttlData?.ttl, initialTtl]);
 
+  // Countdown timer effect with navigation on expiry
   useEffect(() => {
-    if (timeRemaining === null || timeRemaining < 0) return;
+    if (initialTtl === null) return;
 
-    if (timeRemaining === 0) {
+    // Check if already expired on mount
+    if (initialTtl <= 0) {
       router.push("/?alert=timer-expired");
       return;
     }
 
     const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev === null || prev <= 1) {
+      setElapsedSeconds((prev) => {
+        const newElapsed = prev + 1;
+        // Navigate when timer expires (check happens inside interval, not separate effect)
+        if (newElapsed >= initialTtl) {
           clearInterval(interval);
-          return 0;
+          router.push("/?alert=timer-expired");
         }
-
-        return prev - 1;
+        return newElapsed;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timeRemaining, router]);
+  }, [initialTtl, router]);
 
   const { data: messages, refetch } = useQuery({
     queryKey: ["messages", roomId],
