@@ -5,6 +5,7 @@ import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Suspense } from "react";
 
 const errorMessages: Record<string, string[]> = {
   "room-not-found-404": ["ROOM NOT FOUND", "The room does not exist."],
@@ -14,7 +15,11 @@ const errorMessages: Record<string, string[]> = {
   unknown: ["ERROR", "An unexpected error occurred."],
 };
 
-export default function Home() {
+const Page = () => {
+  return <Suspense><Lobby /></Suspense>
+}
+
+const Lobby = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const { username } = useUsername();
 
@@ -89,3 +94,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Page;
