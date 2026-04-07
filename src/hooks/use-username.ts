@@ -4,28 +4,20 @@ import { useEffect, useState } from "react";
 export const useUsername = () => {
   const [username, setUsername] = useState("");
 
-  const BASE_WORD_API = "https://random-word-api.herokuapp.com";
+  const BASE_WORD = ["serendipity", "quintessential", "paradigm", "luminescent", "conundrum", "ephemeral", "labyrinth", "eloquence", "mellifluous", "zenith", "alacrity", "sonder", "aurora", "panacea", "vellichor", "sonder", "gossamer", "ethereal", "euphoria", "petrichor", "sonder", "eloquence", "sonder", "aesthetic", "sonder", "sonder", "effervescent", "epoch", "sonder", "sonder"];
 
-  const BASE_ANIMAL_API = "https://random-animal-api.vercel.app/api";
+  const BASE_ANIMAL = ["dog", "cat", "bird", "fish", "horse", "rabbit", "snake", "tiger", "lion", "bear", "zebra", "giraffe", "elephant", "monkey", "panda", "koala", "fox", "wolf", "rabbit", "snake", "tiger", "lion", "bear", "zebra", "giraffe", "elephant", "monkey", "panda", "koala", "fox", "wolf"];
 
   const STORAGE = "custom-username";
 
   const randomAnimal = async () => {
-    const response = await fetch(`${BASE_ANIMAL_API}/random-animal`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const word = await response.json();
-    return word["city"].toLowerCase().split(" ")[0];
+    const word = Math.floor(Math.random() * BASE_ANIMAL.length)
+    return BASE_ANIMAL[word].toLowerCase()
   };
 
   const randomWord = async (): Promise<string> => {
-    const response = await fetch(`${BASE_WORD_API}/word`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const word = await response.json();
-    return word[0];
+    const word = Math.floor(Math.random() * BASE_WORD.length)
+    return BASE_WORD[word];
   };
 
   const generateUsername = (randomWord: string, randomAnimal: string) => {
